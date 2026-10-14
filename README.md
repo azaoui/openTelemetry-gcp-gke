@@ -4,9 +4,11 @@ Lab minimaliste et reproductible pour **comprendre OpenTelemetry par la pratique
 
 ## Démo vidéo
 
-[![Démo vidéo : usage d'OpenTelemetry dans Cloud Trace](docs/video-thumbnail.png)](docs/demo-opentelemetry-cloud-trace.mp4)
+[![Démo vidéo : usage d'OpenTelemetry dans Cloud Trace](docs/video-thumbnail.png)](https://www.youtube.com/watch?v=LNcq3e5FC4c)
 
-4 min, narration en français : explorateur de traces, waterfall, attributs, erreurs, logs corrélés, percentiles, PromQL. Le guide pas à pas avec captures annotées est dans [docs/USAGE.md](docs/USAGE.md).
+▶ **[Voir la démo sur YouTube](https://www.youtube.com/watch?v=LNcq3e5FC4c)**. 4 min, narration en français : explorateur de traces, waterfall, attributs, erreurs, logs corrélés, percentiles, PromQL.
+
+- Guide pas à pas avec captures annotées : [docs/USAGE.md](docs/USAGE.md).
 
 ---
 
@@ -61,7 +63,7 @@ Scénarios pilotés par l'item demandé :
 │   ├── 21-order-service.yaml
 │   ├── 22-frontend.yaml
 │   └── 30-loadgen.yaml
-└── docs/                     Vidéo de démo, captures annotées, guide d'usage
+└── docs/                     Captures annotées, miniature vidéo, guide d'usage
 ```
 
 ## Versions utilisées

@@ -7,7 +7,7 @@ Légende des captures :
 - cadre **rouge** = zone à observer ;
 - les numéros renvoient au bandeau d'explication en bas de chaque image.
 
-Vidéo commentée (narration en français) : [demo-opentelemetry-cloud-trace.mp4](demo-opentelemetry-cloud-trace.mp4)
+Vidéo commentée (narration en français) : https://www.youtube.com/watch?v=LNcq3e5FC4c
 
 | # | Écran | Ce qu'on apprend | Capture |
 |---|---|---|---|

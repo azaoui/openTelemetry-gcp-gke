@@ -1,0 +1,21 @@
+# Point d'entrée déclaratif : kubectl apply -k k8s/
+# Seule chose à adapter : le chemin de vos images (newName) dans le bloc images.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - 00-namespaces.yaml
+  - 10-otel-collector.yaml
+  - 20-inventory-service.yaml
+  - 21-order-service.yaml
+  - 22-frontend.yaml
+  - 30-loadgen.yaml
+images:
+  - name: otel-lab/frontend
+    newName: REGION-docker.pkg.dev/PROJECT_ID/otel-lab/frontend
+    newTag: "1.0"
+  - name: otel-lab/order-service
+    newName: REGION-docker.pkg.dev/PROJECT_ID/otel-lab/order-service
+    newTag: "1.0"
+  - name: otel-lab/inventory-service
+    newName: REGION-docker.pkg.dev/PROJECT_ID/otel-lab/inventory-service
+    newTag: "1.0"

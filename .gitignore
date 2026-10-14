@@ -1,0 +1,14 @@
+# build Java local
+*.class
+*.jar
+out/
+classes/
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+# résultats de tests locaux
+local/*.log
+local/*-result.txt

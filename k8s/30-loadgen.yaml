@@ -1,0 +1,37 @@
+# Générateur de trafic : 1 requête /checkout toutes les ~2 s, items variés
+# (OK, lent, erreur, inconnu) pour avoir des traces intéressantes dans Cloud Trace.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgen
+  namespace: shop
+  labels:
+    app: loadgen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loadgen
+  template:
+    metadata:
+      labels:
+        app: loadgen
+    spec:
+      containers:
+        - name: loadgen
+          image: curlimages/curl:8.11.1
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              ITEMS="laptop phone keyboard mouse laptop phone mouse slow broken xyz"
+              while true; do
+                for i in $ITEMS; do
+                  code=$(curl -s -o /dev/null -w '%{http_code}' "http://frontend:8080/checkout?item=$i&qty=1")
+                  echo "$(date +%T) item=$i -> HTTP $code"
+                  sleep 2
+                done
+              done
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi

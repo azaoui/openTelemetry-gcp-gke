@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: shop
+  labels:
+    app: inventory-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+        - name: inventory-service
+          image: otel-lab/inventory-service:1.0   # remplacé par kustomization.yaml (images:)
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            # ---------- Application ----------
+            - name: PORT
+              value: "8080"
+            - name: ERROR_RATE      # 5 % d'erreurs 500 aléatoires
+              value: "0.05"
+            # ---------- OpenTelemetry ----------
+            # Active l'agent (présent dans l'image). Commenter ces 2 lignes = service non instrumenté.
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/otel/opentelemetry-javaagent.jar"
+            - name: OTEL_SERVICE_NAME
+              value: "inventory-service"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.namespace=otel-lab,service.version=1.0.0,deployment.environment.name=lab,k8s.pod.name=$(POD_NAME),k8s.pod.ip=$(POD_IP)"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.otel.svc.cluster.local:4318"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_TRACES_SAMPLER
+              value: "parentbased_traceidratio"
+            - name: OTEL_TRACES_SAMPLER_ARG
+              value: "1.0"
+            - name: OTEL_METRIC_EXPORT_INTERVAL
+              value: "30000"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: shop
+spec:
+  selector:
+    app: inventory-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

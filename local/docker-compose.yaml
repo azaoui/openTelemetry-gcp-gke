@@ -1,0 +1,58 @@
+# Stack locale : 3 services Java + OTel Collector + Jaeger
+# Lancer depuis le dossier local/ :  docker compose up --build -d
+#   frontend : http://localhost:8080/checkout?item=laptop&qty=1
+#   Jaeger   : http://localhost:16686
+name: otel-lab
+
+x-otel-env: &otel-env
+  # Active l'agent OpenTelemetry (présent dans l'image, inactif par défaut)
+  JAVA_TOOL_OPTIONS: "-javaagent:/otel/opentelemetry-javaagent.jar"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+  OTEL_TRACES_SAMPLER_ARG: "1.0"
+  OTEL_METRIC_EXPORT_INTERVAL: "15000"
+
+services:
+  frontend:
+    build: ../services/frontend
+    image: otel-lab/frontend:1.0
+    ports: ["8080:8080"]
+    environment:
+      <<: *otel-env
+      OTEL_SERVICE_NAME: frontend
+      OTEL_RESOURCE_ATTRIBUTES: "service.namespace=otel-lab,service.version=1.0.0,deployment.environment.name=local"
+      ORDER_URL: "http://order-service:8080"
+    depends_on: [order-service]
+
+  order-service:
+    build: ../services/order-service
+    image: otel-lab/order-service:1.0
+    environment:
+      <<: *otel-env
+      OTEL_SERVICE_NAME: order-service
+      OTEL_RESOURCE_ATTRIBUTES: "service.namespace=otel-lab,service.version=1.0.0,deployment.environment.name=local"
+      OTEL_INSTRUMENTATION_METHODS_INCLUDE: "lab.order.OrderApp[persistOrder]"
+      INVENTORY_URL: "http://inventory-service:8080"
+    depends_on: [inventory-service]
+
+  inventory-service:
+    build: ../services/inventory-service
+    image: otel-lab/inventory-service:1.0
+    environment:
+      <<: *otel-env
+      OTEL_SERVICE_NAME: inventory-service
+      OTEL_RESOURCE_ATTRIBUTES: "service.namespace=otel-lab,service.version=1.0.0,deployment.environment.name=local"
+      ERROR_RATE: "0.05"
+    depends_on: [otel-collector]
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.162.0
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./otel-collector-local.yaml:/etc/otelcol/config.yaml:ro
+    depends_on: [jaeger]
+
+  jaeger:
+    image: jaegertracing/jaeger:2.22.0
+    ports: ["16686:16686"]
